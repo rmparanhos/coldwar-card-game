@@ -30,8 +30,9 @@ Consequência: um ICBM lançado vai para o fundo e precisa percorrer o baralho a
 
 ## 3. Preparação 💡
 
-- Embaralhar o baralho (composição inicial na seção 8). 💡
-- Cada jogador compra **5 cartas**. 💡
+- Cada jogador começa com **1 ICBM na mão**. O ICBM **não faz parte do baralho**. ✅
+- Embaralhar o baralho (composição inicial na seção 9). 💡
+- Cada jogador compra mais **4 cartas** (mão inicial: ICBM + 4). 💡
 - Inserir a carta **"Fim da Guerra Fria"** (relógio da partida) no fundo do baralho. 💡
 
 ## 4. Turno 💡
@@ -43,25 +44,32 @@ Consequência: um ICBM lançado vai para o fundo e precisa percorrer o baralho a
 Cartas de **reação** (ex.: Defesa antimíssil) podem ser jogadas fora do próprio
 turno, em resposta a algo. 💡
 
-## 5. Cartas "ativas" no baralho 💡
+## 5. Lançamento escondido e jogadas secretas
 
-Algumas cartas, quando jogadas, vão ao fundo **ativas**: no jogo físico, são postas
-**giradas 90°** para indicar que estão "em curso". 💡
+- O lançamento do ICBM é **escondido**: o oponente precisa *perceber*. ✅
+- Como o ICBM só entra no baralho quando é lançado, **todo ICBM comprado do
+  baralho está em voo** e detona. Não é preciso marcar cartas "ativas". 💡
+- **Jogada secreta** 💡: em vez de jogar uma carta aberta, o jogador pode pôr
+  **1 carta virada para baixo no fundo** do baralho. Pode ser o ICBM ou qualquer
+  outra carta (**blefe**). O oponente vê que houve uma jogada secreta, mas não sabe
+  qual carta foi.
 
-- Quando uma carta **ativa** chega ao topo e é comprada, ela **se resolve**
-  (ex.: o ICBM detona).
-- Quando uma carta **inativa** é comprada, vai para a mão normalmente.
-- Depois de resolvida, a carta vira inativa e volta ao fundo.
+Assim, perceber um lançamento depende de:
 
-❓ As cartas ativas ficam **visíveis** para todos (lançamento público) ou
-**escondidas** (o oponente precisa "perceber" com espionagem)? A simulação pode
-testar as duas variantes.
+- **Avião espião / Satélite**: vê as próximas cartas do topo, então só detecta o
+  míssil quando ele já está **perto de chegar** (detecção tardia).
+- **Serviço secreto**: vê a mão do oponente. Se o ICBM **sumiu da mão**, ele foi
+  lançado.
+- **Leitura do oponente**: houve jogada secreta. Foi míssil ou blefe?
+
+O **Tratado** também é posto no fundo e precisa ser reconhecido quando volta. 💡
+Ele é jogado **aberto** (diplomacia é pública), e quem o compra o revela e resolve.
 
 ## 6. Cartas conhecidas
 
 | Carta | Efeito | Status |
 |---|---|---|
-| **ICBM** | Lança um míssil contra o oponente: vai ao fundo **ativo**. Quando chega ao topo, atinge o alvo. | ✅ ideia / 💡 detalhes |
+| **ICBM** | **1 por jogador**, já na mão inicial. Lançado em segredo no fundo do baralho; quando chega ao topo, atinge o alvo. | ✅ |
 | **Defesa antimíssil** | Desativa um ICBM em curso que tenha você como alvo. | ✅ |
 | **Avião espião / Satélite** | Olhe as próximas cartas do baralho (💡 3 cartas). | ✅ |
 | **Polícia / Serviço secreto** | Olhe a mão do oponente. | ✅ |
@@ -130,7 +138,9 @@ A ideia original: ✅
   ganharia na paz, e o atingido ganha **zero**.
 - Se ambos lançam, **ninguém ganha**.
 
-Proposta de valores por partida, para jogar em **séries de várias partidas**: 💡
+O jogo é disputado em **séries de várias partidas**, somando pontos. ✅
+
+Proposta de valores por partida: 💡
 
 | Resultado | Vencedor | Perdedor |
 |---|---|---|
@@ -156,15 +166,13 @@ num **dilema repetido**. Aí entram reputação, retaliação e estratégias com
 *olho por olho* (tit-for-tat). Os bots da simulação podem testar isso, num estilo
 de torneio de Axelrod.
 
-❓ Uma partida isolada também deve valer, ou o jogo é pensado em séries?
-
 ## 9. Composição inicial do baralho 💡
 
-Ponto de partida para a simulação; os números serão ajustados.
+Ponto de partida para a simulação; os números serão ajustados. Os 2 ICBMs ficam
+**fora** do baralho (começam nas mãos).
 
 | Carta | Qtd |
 |---|---|
-| ICBM | 6 |
 | Defesa antimíssil | 4 |
 | Avião espião / Satélite | 4 |
 | Serviço secreto | 4 |
@@ -174,10 +182,11 @@ Ponto de partida para a simulação; os números serão ajustados.
 | Pouso na Lua | 3 |
 | Crises | 4 |
 | Fim da Guerra Fria | 1 |
-| **Total** | **35** |
+| **Total** | **29** |
 
-Com 35 cartas e 2 jogadores, uma carta jogada leva cerca de **17 rodadas** para
-voltar ao topo (menos as cartas que estão nas mãos).
+Com 29 cartas no baralho, menos as 8 compradas na mão inicial, sobram cerca de
+21. Com 2 jogadores comprando 1 por turno, uma carta jogada leva cerca de
+**10 rodadas** para voltar ao topo.
 
 ## 10. O que a simulação deve medir
 
@@ -191,9 +200,14 @@ voltar ao topo (menos as cartas que estão nas mãos).
 
 ## Dúvidas em aberto ❓
 
-1. O lançamento de ICBM é público ou escondido?
-2. ICBM desativado volta ao baralho ou sai do jogo?
-3. O que fazia a **proxy war**?
-4. Quais eram as **Crises**?
-5. Valor da destruição mútua: 0 ou negativo?
-6. Partida isolada ou séries de partidas?
+1. A Defesa antimíssil pode ser jogada "às cegas"?
+2. O que fazia a **proxy war**?
+3. Quais eram as **Crises**?
+4. Valor da destruição mútua: 0 ou negativo?
+
+### Decididas
+
+- ✅ Lançamento do ICBM é **escondido**.
+- ✅ **1 ICBM por jogador**, começando na mão.
+- ✅ O jogo é disputado em **séries**.
+- 💡 ICBM interceptado sai do jogo.
