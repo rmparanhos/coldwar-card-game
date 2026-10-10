@@ -81,13 +81,18 @@ Ele é jogado **aberto** (diplomacia é pública), e quem o compra o revela e re
 
 ### Detalhes do ICBM 💡
 
+- Cada jogador tem **um único ICBM por partida**. ✅
 - O alvo do ICBM é o oponente, **não quem o compra**: se o próprio atacante
-  comprar seu ICBM ativo, ele detona no alvo do mesmo jeito. 💡
+  comprar seu ICBM, ele detona no alvo do mesmo jeito. 💡
 - **Retaliação**: enquanto um ICBM está em curso, o alvo pode lançar o próprio ICBM.
   Ele entra no fundo, *depois* do primeiro, então ambos acabam chegando:
   **destruição mútua**. ✅
-- ❓ Um ICBM desativado pela Defesa volta ao fundo como carta inativa (reutilizável)
-  ou sai do jogo?
+- Quem é atingido **antes** de lançar o seu ICBM não pode mais retaliar. 💡
+- Um ICBM desativado pela **Defesa antimíssil** **sai do jogo**. Como cada
+  jogador só tem um, quem foi interceptado perdeu a sua arma. 💡
+- ❓ Para a Defesa funcionar, o alvo precisa saber que o míssil vem. Ela pode ser
+  jogada **"às cegas"** (desativa o primeiro ICBM inimigo em voo, se houver) ou
+  só como reação a um míssil detectado?
 
 ### Ideias de Crises 💡 (aguardando as suas lembranças)
 
@@ -109,7 +114,7 @@ O seu ICBM atinge o oponente, e ele não tem nenhum ICBM em curso contra você
 
 ### 🕊️ Diplomática 💡
 
-Você joga **Tratado**, que vai ao fundo **ativo**. Se ele voltar ao topo **sem que
+Você joga **Tratado** (aberto), que vai ao fundo do baralho. Se ele voltar ao topo **sem que
 nenhum ICBM tenha sido lançado nesse intervalo**, você vence pela diplomacia.
 
 Isso cria tensão: para impedir a paz, o oponente precisa escalar. Ao escalar,
