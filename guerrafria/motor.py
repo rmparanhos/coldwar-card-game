@@ -8,7 +8,7 @@ from collections import Counter, deque
 from dataclasses import dataclass, field
 from itertools import islice
 
-from .cartas import CRISES, REACOES, TECNOLOGIAS, Carta, Tipo
+from .cartas import CRISES, ORDEM_TECNOLOGIA, REACOES, TECNOLOGIAS, Carta, Tipo
 from .config import Config
 
 LADOS = ("EUA", "URSS")
@@ -175,6 +175,10 @@ class Partida:
                 continue
             if t in TECNOLOGIAS and t in mesa:
                 continue
+            if t in TECNOLOGIAS and self.cfg.tecnologia_em_ordem:
+                anteriores = ORDEM_TECNOLOGIA[: ORDEM_TECNOLOGIA.index(t)]
+                if not all(a in mesa for a in anteriores):
+                    continue
             if t is Tipo.SABOTAGEM and not oponente_tem_tec:
                 continue
             resultado.append(c)
@@ -233,6 +237,14 @@ class Partida:
         for _ in range(compras):
             self._comprar(p)
         self._limite_mao(p)
+        self._radar()
+
+    def _radar(self):
+        """Mísseis perto do topo são detectados por todos."""
+        for c in islice(self.baralho, self.cfg.radar):
+            if c.tipo is Tipo.ICBM and self.intel[1 - c.dono].estado != VOO:
+                self.intel[1 - c.dono].estado = VOO
+                self._registrar(f"Radar de {self._nome(1 - c.dono)} detecta um ICBM chegando!")
 
     def _limite_mao(self, p):
         excesso = len(self.maos[p]) - self.cfg.limite_mao
@@ -313,7 +325,10 @@ class Partida:
         if t is Tipo.TRATADO:
             carta.dono = p
             carta.pendente = True
-            self.baralho.append(carta)
+            if self.cfg.tratado_no_meio:
+                self.baralho.insert(len(self.baralho) // 2, carta)
+            else:
+                self.baralho.append(carta)
             return
 
         if t is Tipo.SATELITE:
@@ -470,8 +485,9 @@ class Partida:
         atacante = 1 - alvo
         self.icbm[atacante] = DETONADO
         self._registrar(f"{self._nome(alvo)} é ATINGIDO")
-        if self.icbm[alvo] == MAO and any(c.tipo is Tipo.SUBMARINO for c in self.mesas[alvo]):
-            self._registrar(f"Submarino de {self._nome(alvo)} retalia automaticamente")
+        submarino = any(c.tipo is Tipo.SUBMARINO for c in self.mesas[alvo])
+        if self.icbm[alvo] == MAO and (submarino or self.cfg.segundo_ataque):
+            self._registrar(f"{self._nome(alvo)} retalia com o segundo ataque")
             missil = self._tirar(alvo, Tipo.ICBM)
             missil.dono = alvo
             self.icbm[alvo] = VOO

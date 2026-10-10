@@ -55,5 +55,13 @@ class Config:
     # False: Defesa é usada quando o ICBM inimigo chega (como o "Defuse" do Exploding Kittens).
     # True: Defesa é jogada no próprio turno e procura um ICBM inimigo em voo no baralho.
     defesa_cega: bool = False
+    # Tecnologias só podem ser jogadas na ordem: Sputnik, Voo tripulado, Pouso na Lua.
+    tecnologia_em_ordem: bool = False
+    # O Tratado entra no meio do baralho em vez de no fundo (volta mais rápido).
+    tratado_no_meio: bool = False
+    # Ao fim de cada turno, ICBMs entre as N cartas do topo são revelados ao alvo (0 = sem radar).
+    radar: int = 0
+    # Quem é atingido com o ICBM ainda na mão sempre retalia (como se todos tivessem o Submarino).
+    segundo_ataque: bool = False
     pontos: dict = field(default_factory=_pontos_padrao)
     max_turnos: int = 400

@@ -89,6 +89,29 @@ class TestMotor(unittest.TestCase):
         r = p.jogar()
         self.assertEqual(r.tipo, "destruicao_mutua")
 
+    def test_segundo_ataque_retalia_sem_submarino(self):
+        bots = [Roteiro([(Tipo.ICBM, True)]), Roteiro()]
+        p = montar(bots, [[], []], [Tipo.DESERTOR] * 3, segundo_ataque=True)
+        r = p.jogar()
+        self.assertEqual(r.tipo, "destruicao_mutua")
+
+    def test_tratado_no_meio_volta_mais_cedo(self):
+        bots = [Roteiro([(Tipo.TRATADO, False)]), Roteiro()]
+        p = montar(bots, [[Tipo.TRATADO], []], [Tipo.DESERTOR] * 10, tratado_no_meio=True)
+        p._turno(0)
+        posicao = next(i for i, c in enumerate(p.baralho) if c.tipo is Tipo.TRATADO)
+        self.assertLess(posicao, len(p.baralho) - 1)
+
+    def test_tecnologia_em_ordem(self):
+        p = montar([Roteiro(), Roteiro()], [[Tipo.POUSO_LUA, Tipo.SPUTNIK], []], [Tipo.DESERTOR], tecnologia_em_ordem=True)
+        self.assertEqual([c.tipo for c in p.jogaveis(0)], [Tipo.SPUTNIK])
+
+    def test_radar_revela_missil_perto_do_topo(self):
+        bots = [Roteiro([(Tipo.ICBM, True)]), Roteiro()]
+        p = montar(bots, [[], []], [Tipo.DESERTOR] * 2, radar=2)
+        p._turno(0)
+        self.assertEqual(p.visao(1).icbm_oponente, VOO)
+
     def test_atacante_com_defesa_sobrevive_a_retaliacao(self):
         bots = [Roteiro([(Tipo.ICBM, True)]), Roteiro([(Tipo.ICBM, True)])]
         p = montar(bots, [[Tipo.DEFESA], []], [Tipo.DESERTOR] * 3)

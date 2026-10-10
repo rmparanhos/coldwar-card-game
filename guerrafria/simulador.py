@@ -88,20 +88,27 @@ def cmd_duelo(args, cfg):
     print(f"Séries vencidas: {args.a} {pontos_serie[0]} | {args.b} {pontos_serie[1]}")
 
 
-def cmd_torneio(args, cfg):
-    rng = random.Random(args.semente)
-    nomes = list(ESTRATEGIAS)
+def torneio(cfg, series, partidas, rng, nomes=None):
+    """Todas as estratégias contra todas. Retorna (pontos médios por série, todos os resultados)."""
+    nomes = nomes or list(ESTRATEGIAS)
     media = {}
     todos = []
     for a, b in combinations_with_replacement(nomes, 2):
         pa, pb = [], []
-        for _ in range(args.series):
-            serie = jogar_serie(a, b, args.partidas, cfg, rng)
+        for _ in range(series):
+            serie = jogar_serie(a, b, partidas, cfg, rng)
             todos += serie
             pa.append(sum(r.pontos[0] for r in serie))
             pb.append(sum(r.pontos[1] for r in serie))
         media[(a, b)] = mean(pa)
         media[(b, a)] = mean(pb) if a != b else mean(pa + pb)
+    return media, todos
+
+
+def cmd_torneio(args, cfg):
+    rng = random.Random(args.semente)
+    nomes = list(ESTRATEGIAS)
+    media, todos = torneio(cfg, args.series, args.partidas, rng, nomes)
 
     print(f"Torneio: {args.series} séries de {args.partidas} partidas por confronto")
     print("Pontos médios por série da LINHA contra a COLUNA\n")

@@ -40,7 +40,8 @@ class Tipo(Enum):
         return self.value
 
 
-TECNOLOGIAS = frozenset({Tipo.SPUTNIK, Tipo.VOO_TRIPULADO, Tipo.POUSO_LUA})
+ORDEM_TECNOLOGIA = (Tipo.SPUTNIK, Tipo.VOO_TRIPULADO, Tipo.POUSO_LUA)
+TECNOLOGIAS = frozenset(ORDEM_TECNOLOGIA)
 CRISES = frozenset({Tipo.CRISE_MISSEIS, Tipo.ALARME_FALSO, Tipo.GOLPE, Tipo.ESCALADA})
 # Cartas que só podem ser usadas como reação, fora da jogada normal do turno.
 REACOES = frozenset({Tipo.VETO, Tipo.PONTE_AEREA})

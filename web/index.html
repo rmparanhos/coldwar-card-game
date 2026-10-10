@@ -1,0 +1,731 @@
+<meta charset="utf-8">
+<title>Guerra Fria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=Special+Elite&display=swap">
+<style>
+/* Layout: mesa de crise. Oponente no alto, linha do tempo (o baralho) no meio, sua mão embaixo; diário ao lado no desktop. */
+:root {
+  --papel: #e7eae6;
+  --folha: #f5f6f2;
+  --tinta: #1d2733;
+  --apagado: #5e6b78;
+  --linha: #c3cac8;
+  --carimbo: #b3261e;
+  --eua: #24508f;
+  --urss: #a3231b;
+  --militar: #b3261e;
+  --espionagem: #5b4a8a;
+  --tempo: #a06a12;
+  --diplomacia: #1f7a6d;
+  --tecnologia: #2f5fa8;
+  --crise: #2b2b2b;
+  --verso: #2c3a4a;
+  --verso-risca: #3a4b5e;
+  --ok: #2f7a3a;
+  --sombra: 0 1px 0 rgba(20, 30, 40, .12), 0 6px 14px -8px rgba(20, 30, 40, .35);
+  --f-titulo: "Special Elite", "Courier New", monospace;
+  --f-texto: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-dado: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --papel: #151b22; --folha: #1e2630; --tinta: #e3e7ea; --apagado: #93a0ac; --linha: #33404d;
+    --carimbo: #e0574d; --eua: #6c9be0; --urss: #e0645a; --militar: #e0574d; --espionagem: #a493dd;
+    --tempo: #d9a24a; --diplomacia: #4fbcab; --tecnologia: #6e9de6; --crise: #c9c9c9;
+    --verso: #2b3846; --verso-risca: #374759; --ok: #5bbd69;
+    --sombra: 0 1px 0 rgba(0, 0, 0, .4), 0 8px 16px -8px rgba(0, 0, 0, .6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --papel: #151b22; --folha: #1e2630; --tinta: #e3e7ea; --apagado: #93a0ac; --linha: #33404d;
+  --carimbo: #e0574d; --eua: #6c9be0; --urss: #e0645a; --militar: #e0574d; --espionagem: #a493dd;
+  --tempo: #d9a24a; --diplomacia: #4fbcab; --tecnologia: #6e9de6; --crise: #c9c9c9;
+  --verso: #2b3846; --verso-risca: #374759; --ok: #5bbd69;
+  --sombra: 0 1px 0 rgba(0, 0, 0, .4), 0 8px 16px -8px rgba(0, 0, 0, .6);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--f-texto);
+  font-size: 15px;
+  line-height: 1.4;
+  padding-inline: 16px;
+  padding-block: 12px 32px;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, .carta:focus-visible { outline: 2px solid var(--tecnologia); outline-offset: 2px; }
+
+.app { max-width: 1180px; margin: 0 auto; display: grid; gap: 16px; }
+@media (min-width: 960px) {
+  .app.jogando { grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
+  .app.jogando .topo { grid-column: 1 / -1; }
+}
+
+/* Cabeçalho */
+.topo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; border-bottom: 2px solid var(--tinta); padding-bottom: 10px; }
+.marca { font-family: var(--f-titulo); font-size: 28px; letter-spacing: .04em; margin: 0; line-height: 1; }
+.marca small { display: block; font-family: var(--f-dado); font-size: 11px; letter-spacing: .12em; color: var(--apagado); margin-top: 4px; text-transform: uppercase; }
+.placar { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--f-dado); font-size: 13px; font-variant-numeric: tabular-nums; margin-left: auto; align-items: center; }
+.placar b { font-size: 18px; }
+.lado-eua { color: var(--eua); }
+.lado-urss { color: var(--urss); }
+.botao {
+  border: 1.5px solid var(--tinta); background: var(--folha); border-radius: 3px;
+  padding: 8px 14px; font-weight: 600; letter-spacing: .02em;
+}
+.botao:hover { background: var(--papel); }
+.botao.primario { background: var(--tinta); color: var(--folha); }
+.botao.primario:hover { opacity: .9; }
+.botao.perigo { border-color: var(--carimbo); background: var(--carimbo); color: #fff; }
+.botao.leve { border-color: var(--linha); font-weight: 500; }
+.botao:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Painéis */
+.mesa { display: grid; gap: 14px; min-width: 0; }
+.painel { background: var(--folha); border: 1px solid var(--linha); border-radius: 4px; padding: 12px 14px; display: grid; gap: 10px; min-width: 0; }
+.painel h2 { margin: 0; font-size: 13px; font-family: var(--f-dado); letter-spacing: .12em; text-transform: uppercase; font-weight: 600; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.painel h2 .sub { color: var(--apagado); font-weight: 400; letter-spacing: .04em; text-transform: none; }
+.linha-info { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+
+.chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-dado); font-size: 12px; padding: 3px 8px; border-radius: 2px; border: 1px solid var(--linha); background: var(--papel); }
+.chip.alerta { border-color: var(--carimbo); color: var(--carimbo); font-weight: 600; }
+.chip.ok { border-color: var(--ok); color: var(--ok); }
+.chip .ponto { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+.tecs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tec { font-size: 12px; padding: 3px 8px; border: 1px dashed var(--linha); border-radius: 2px; color: var(--apagado); }
+.tec.tem { border: 1px solid var(--tecnologia); color: var(--tecnologia); font-weight: 600; background: color-mix(in srgb, var(--tecnologia) 10%, transparent); }
+
+.versos { display: flex; gap: 4px; flex-wrap: wrap; }
+.verso-mini { width: 22px; height: 32px; border-radius: 2px; background: repeating-linear-gradient(45deg, var(--verso), var(--verso) 3px, var(--verso-risca) 3px, var(--verso-risca) 6px); border: 1px solid var(--verso); }
+
+/* Linha do tempo = baralho */
+.tempo { display: grid; gap: 6px; }
+.trilha-rolagem { overflow-x: auto; padding-bottom: 4px; }
+.trilha { display: flex; gap: 3px; align-items: flex-end; min-width: min-content; padding-top: 18px; position: relative; }
+.fatia { width: 12px; height: 34px; flex: none; border-radius: 1px; background: var(--verso); opacity: .85; position: relative; }
+.fatia:first-child { outline: 2px solid var(--tinta); outline-offset: 1px; }
+.fatia.tratado { background: var(--diplomacia); opacity: 1; height: 40px; }
+.fatia.meu-missil { background: var(--carimbo); opacity: 1; height: 40px; }
+.fatia .rotulo { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); font-family: var(--f-dado); font-size: 10px; white-space: nowrap; margin-bottom: 2px; }
+.legenda { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--apagado); font-family: var(--f-dado); }
+.legenda i { display: inline-block; width: 10px; height: 10px; vertical-align: -1px; margin-right: 4px; border-radius: 1px; }
+
+/* Cartas */
+.mao { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+.carta {
+  --cor: var(--apagado);
+  text-align: left; background: var(--folha); border: 1px solid var(--linha); border-top: 6px solid var(--cor);
+  border-radius: 4px; padding: 8px 9px 10px; min-height: 104px; display: flex; flex-direction: column; gap: 4px;
+  box-shadow: var(--sombra); transition: transform .12s ease;
+}
+.carta:not(:disabled):hover { transform: translateY(-2px); }
+.carta.selecionada { outline: 2px solid var(--cor); outline-offset: 2px; transform: translateY(-4px); }
+.carta:disabled { cursor: default; }
+.carta .cat { font-family: var(--f-dado); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--cor); }
+.carta .nome { font-weight: 700; font-size: 15px; line-height: 1.15; overflow-wrap: anywhere; hyphens: auto; }
+.carta .nota { font-size: 11.5px; color: var(--apagado); margin-top: auto; }
+.carta.icbm { background: color-mix(in srgb, var(--carimbo) 8%, var(--folha)); }
+.cat-militar { --cor: var(--militar); }
+.cat-espionagem { --cor: var(--espionagem); }
+.cat-tempo { --cor: var(--tempo); }
+.cat-diplomacia { --cor: var(--diplomacia); }
+.cat-tecnologia { --cor: var(--tecnologia); }
+.cat-crise { --cor: var(--crise); }
+.cat-relogio { --cor: var(--apagado); }
+
+/* Ações */
+.acao { display: grid; gap: 10px; border: 1.5px solid var(--tinta); background: var(--folha); border-radius: 4px; padding: 12px 14px; }
+.acao .status { font-weight: 600; font-size: 16px; }
+.acao .desc { color: var(--apagado); max-width: 62ch; }
+.botoes { display: flex; flex-wrap: wrap; gap: 8px; }
+.pensando::after { content: "…"; animation: pisca 1s steps(3) infinite; }
+@keyframes pisca { 0% { opacity: .2; } 50% { opacity: 1; } 100% { opacity: .2; } }
+
+/* Diário */
+.diario { background: var(--folha); border: 1px solid var(--linha); border-radius: 4px; padding: 12px 14px; display: grid; gap: 8px; min-width: 0; }
+@media (min-width: 960px) { .diario { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 40px); grid-template-rows: auto minmax(0, 1fr); } }
+.diario h2 { margin: 0; font-family: var(--f-titulo); font-size: 18px; font-weight: 400; }
+.registro { font-family: var(--f-dado); font-size: 12px; display: grid; gap: 4px; overflow-y: auto; max-height: 340px; padding-right: 4px; }
+@media (min-width: 960px) { .registro { max-height: none; min-height: 0; } }
+.registro div { border-left: 2px solid var(--linha); padding-left: 8px; }
+.registro .privado { border-left-color: var(--tecnologia); }
+.registro .forte { border-left-color: var(--carimbo); color: var(--carimbo); font-weight: 600; }
+.registro .turno { border: 0; padding: 4px 0 0; color: var(--apagado); font-size: 11px; letter-spacing: .08em; }
+
+/* Modal */
+.veu { position: fixed; inset: 0; background: rgba(15, 22, 30, .55); display: grid; place-items: center; padding: 16px; z-index: 10; }
+.modal { background: var(--folha); color: var(--tinta); border: 2px solid var(--tinta); border-radius: 4px; padding: 18px; width: min(560px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; display: grid; gap: 12px; box-shadow: 0 20px 50px -20px rgba(0, 0, 0, .6); }
+.modal h3 { margin: 0; font-family: var(--f-titulo); font-size: 24px; font-weight: 400; line-height: 1.1; text-wrap: balance; }
+.modal p { margin: 0; }
+.carimbo { display: inline-block; font-family: var(--f-titulo); color: var(--carimbo); border: 2px solid var(--carimbo); padding: 2px 10px; transform: rotate(-3deg); letter-spacing: .08em; font-size: 14px; justify-self: start; }
+
+/* Tela inicial */
+.inicio { display: grid; gap: 16px; max-width: 760px; }
+.inicio .intro { font-size: 17px; max-width: 62ch; margin: 0; }
+.campos { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.campo { display: grid; gap: 6px; align-content: start; }
+.campo > span { font-family: var(--f-dado); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--apagado); }
+.opcoes { display: flex; flex-wrap: wrap; gap: 6px; }
+.opcao { border: 1.5px solid var(--linha); background: var(--folha); padding: 7px 12px; border-radius: 3px; font-weight: 500; }
+.opcao[aria-pressed="true"] { border-color: var(--tinta); background: var(--tinta); color: var(--folha); }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+.check input { margin-top: 3px; }
+.dica { font-size: 13px; color: var(--apagado); }
+details.regras { background: var(--folha); border: 1px solid var(--linha); border-radius: 4px; padding: 10px 14px; }
+details.regras summary { cursor: pointer; font-weight: 600; }
+details.regras ul { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 4px; max-width: 70ch; }
+
+@media (prefers-reduced-motion: reduce) {
+  .carta, .pensando::after { transition: none; animation: none; }
+}
+</style>
+
+<div class="app" id="app"></div>
+
+<script src="motor.js"></script>
+<script>
+"use strict";
+const G = window.GuerraFria;
+const { CARTAS, LADOS, ESTRATEGIAS } = G;
+
+const $app = document.getElementById("app");
+const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+const ROTULO_CAT = { militar: "Militar", espionagem: "Espionagem", tempo: "Tempo", diplomacia: "Diplomacia", tecnologia: "Tecnologia", crise: "Crise", relogio: "Relógio" };
+const NOME_RESULTADO = {
+  militar: "Vitória militar", diplomatica: "Vitória diplomática", tecnologica: "Vitória tecnológica",
+  paz: "Paz", destruicao_mutua: "Destruição mútua",
+};
+
+// ------------------------------------------------------------------- estado
+
+const ajustes = {
+  lado: 0,
+  oponente: "surpresa",
+  partidas: 5,
+  tratadoNoMeio: false,
+  tecnologiaEmOrdem: false,
+  radar: false,
+  segundoAtaque: false,
+  defesas: 3,
+};
+try { Object.assign(ajustes, JSON.parse(localStorage.getItem("gf-ajustes") || "{}")); } catch (e) {}
+
+const est = {
+  tela: "inicio",
+  serie: null,      // {cfg, humano, bot, botChave, partida, n, placar, resultados}
+  partida: null,
+  selecionada: null,
+  pedido: null,     // {tipo, v, resolver}
+  modal: null,      // {titulo, html, botoes:[{rot, val, estilo}], resolver, ...}
+  registro: [],
+  ultimoTurno: 0,
+};
+
+// --------------------------------------------------------------- jogadores
+
+const nunca = () => new Promise(() => {});
+
+class Humano {
+  constructor(serie) { this.serie = serie; }
+  ativo() { return est.serie === this.serie; }
+  inicioPartida(eu) { this.eu = eu; }
+  fimPartida() {}
+  escolherJogada(v) {
+    if (!this.ativo()) return nunca();
+    return new Promise((resolver) => { est.pedido = { tipo: "jogada", v, resolver }; est.selecionada = null; render(); });
+  }
+  querVetar(v, tipo, autor) {
+    if (!this.ativo()) return nunca();
+    const nome = CARTAS[tipo].nome;
+    const texto = autor === v.eu
+      ? `O adversário vetou a sua carta <b>${esc(nome)}</b>. Usar outro Veto na ONU para salvá-la?`
+      : `${LADOS[autor]} joga <b>${esc(nome)}</b>. ${esc(CARTAS[tipo].desc)}<br><br>Usar Veto na ONU para cancelar?`;
+    return perguntar("Veto na ONU?", texto, [
+      { rot: "Vetar", val: true, estilo: "primario" },
+      { rot: "Deixar passar", val: false },
+    ]);
+  }
+  usarDefesa(v) {
+    if (!this.ativo()) return nunca();
+    return perguntar("Míssil chegando!", `O ICBM de ${LADOS[1 - v.eu]} chegou ao topo do baralho. Usar a Defesa antimíssil?`, [
+      { rot: "Interceptar", val: true, estilo: "primario" },
+      { rot: "Não usar", val: false },
+    ]);
+  }
+  usarPonteAerea(v) {
+    if (!this.ativo()) return nunca();
+    return perguntar("Bloqueio de Berlim", "O adversário quer fazer você comprar 2 cartas no próximo turno. Responder com Ponte aérea?", [
+      { rot: "Usar Ponte aérea", val: true, estilo: "primario" },
+      { rot: "Aceitar o bloqueio", val: false },
+    ]);
+  }
+  alarmeLancar(v) {
+    if (!this.ativo()) return nunca();
+    return perguntar("Alarme falso?", "O radar indica um ataque inimigo. Você precisa pôr uma carta virada no fundo do baralho agora. O adversário só vai saber que você pôs uma carta.", [
+      { rot: "Lançar o ICBM", val: true, estilo: "perigo" },
+      { rot: "Pôr outra carta (blefe)", val: false },
+    ]);
+  }
+  reordenar(v, cartas) { return this.ativo() ? ordenar(cartas) : nunca(); }
+  descartar(v, n) {
+    if (!this.ativo()) return nunca();
+    return escolherCartas(v.mao.filter((c) => c.tipo !== "ICBM"), n,
+      "Limite de mão", `Você tem mais de ${est.serie.cfg.limiteMao} cartas. Escolha ${n} para mandar ao fundo do baralho.`);
+  }
+  async observar(v, ev) {
+    if (!this.ativo()) return nunca();
+    if (ev.tipo === "topo") {
+      await informar("Satélite", "As próximas cartas do baralho, a partir do topo:", ev.cartas, v.eu);
+    } else if (ev.tipo === "mao") {
+      await informar("Serviço secreto", "A mão do adversário:", ev.cartas, v.eu);
+    } else if (ev.tipo === "estado") {
+      const txt = { mao: "O ICBM inimigo ainda está na mão dele.", voo: "O ICBM inimigo está EM VOO contra você!", interceptado: "O ICBM inimigo está fora de jogo." }[ev.estado];
+      await perguntar("Telefone vermelho", txt, [{ rot: "Entendido", val: true, estilo: "primario" }]);
+    }
+  }
+}
+
+class BotLento {
+  constructor(bot) { this.bot = bot; }
+  inicioPartida(eu) { this.bot.inicioPartida(eu); }
+  fimPartida(r) { this.bot.fimPartida(r); }
+  async escolherJogada(v) { await dormir(650); return this.bot.escolherJogada(v); }
+  async querVetar(...a) { await dormir(250); return this.bot.querVetar(...a); }
+  usarDefesa(...a) { return this.bot.usarDefesa(...a); }
+  usarPonteAerea(...a) { return this.bot.usarPonteAerea(...a); }
+  alarmeLancar(...a) { return this.bot.alarmeLancar(...a); }
+  reordenar(...a) { return this.bot.reordenar(...a); }
+  descartar(...a) { return this.bot.descartar(...a); }
+}
+
+// ------------------------------------------------------------------ diálogos
+
+function abrirModal(m) {
+  return new Promise((resolver) => { est.modal = Object.assign(m, { resolver }); render(); });
+}
+function fecharModal(val) {
+  const m = est.modal;
+  est.modal = null;
+  render();
+  if (m) m.resolver(val);
+}
+function perguntar(titulo, html, botoes) { return abrirModal({ titulo, html, botoes }); }
+function informar(titulo, texto, cartas, eu) {
+  const html = `<p>${esc(texto)}</p>` + (cartas.length
+    ? `<div class="mao">${cartas.map((c) => cartaHtml(c, { eu, desabilitada: true })).join("")}</div>`
+    : `<p class="dica">Nenhuma carta.</p>`);
+  return abrirModal({ titulo, html, botoes: [{ rot: "Entendido", val: true, estilo: "primario" }] });
+}
+function escolherCartas(cartas, n, titulo, texto) {
+  return abrirModal({ titulo, texto, tipo: "escolher", cartas, n, marcadas: [] });
+}
+function ordenar(cartas) {
+  return abrirModal({ titulo: "Desinformação", texto: "Toque nas cartas na ordem em que devem ficar, começando pelo topo.", tipo: "ordenar", cartas, ordem: [] });
+}
+
+// ------------------------------------------------------------------ registro
+
+function registrar(texto, classe = "") {
+  if (!texto) return;
+  est.registro.push({ texto, classe });
+}
+
+const ouvinte = {
+  evento(texto, privado) {
+    const p = est.partida;
+    if (!est.serie || !p) return;
+    if (p && p.turno !== est.ultimoTurno) {
+      est.ultimoTurno = p.turno;
+      registrar(`TURNO ${p.turno} · ${p.vez === est.serie.humano ? "você" : LADOS[p.vez]}`, "turno");
+    }
+    if (privado && privado.jogador === est.serie.humano) registrar(privado.texto, "privado");
+    else if (texto) registrar(texto, /ATINGIDO|INTERCEPTADO|☢|CRISE|completa|Tratado .* volta/.test(texto) ? "forte" : "");
+    render();
+  },
+  async pausa() { await dormir(150); },
+};
+
+// --------------------------------------------------------------------- série
+
+function montarConfig() {
+  const cfg = G.configPadrao();
+  cfg.baralho.DEFESA = ajustes.defesas;
+  cfg.tratadoNoMeio = ajustes.tratadoNoMeio;
+  cfg.tecnologiaEmOrdem = ajustes.tecnologiaEmOrdem;
+  cfg.radar = ajustes.radar ? 2 : 0;
+  cfg.segundoAtaque = ajustes.segundoAtaque;
+  return cfg;
+}
+
+async function novaSerie() {
+  try { localStorage.setItem("gf-ajustes", JSON.stringify(ajustes)); } catch (e) {}
+  const chaves = Object.keys(ESTRATEGIAS);
+  const botChave = ajustes.oponente === "surpresa" ? chaves[Math.floor(Math.random() * chaves.length)] : ajustes.oponente;
+  const humano = ajustes.lado;
+  const serie = {
+    cfg: montarConfig(), humano, botChave, oculto: ajustes.oponente === "surpresa",
+    jogador: null, bot: new BotLento(ESTRATEGIAS[botChave].criar(Math.random)),
+    n: 0, total: ajustes.partidas, placar: [0, 0], resultados: [],
+  };
+  serie.jogador = new Humano(serie);
+  est.serie = serie;
+  est.tela = "jogo";
+  const id = serie;
+  for (serie.n = 1; serie.n <= serie.total; serie.n++) {
+    const jogadores = humano === 0 ? [serie.jogador, serie.bot] : [serie.bot, serie.jogador];
+    jogadores.forEach((j, eu) => j.inicioPartida(eu));
+    est.registro = [];
+    est.ultimoTurno = 0;
+    const partida = new G.Partida(jogadores, serie.cfg, {
+      primeiro: (serie.n - 1) % 2,
+      ouvinte: { evento: (t, pv) => { if (est.partida === partida) ouvinte.evento(t, pv); }, pausa: ouvinte.pausa },
+    });
+    est.partida = partida;
+    registrar(`Partida ${serie.n} de ${serie.total}. Começa: ${est.partida.primeiro === humano ? "você" : LADOS[1 - humano]}.`, "turno");
+    render();
+    const r = await est.partida.jogar();
+    if (est.serie !== id) return;  // série abandonada
+    jogadores.forEach((j) => j.fimPartida(r));
+    serie.placar[0] += r.pontos[0];
+    serie.placar[1] += r.pontos[1];
+    serie.resultados.push(r);
+    await mostrarResultado(r);
+    if (est.serie !== id) return;
+  }
+  await mostrarFimSerie();
+}
+
+function textoResultado(r, h) {
+  const eu = (x) => (x === h ? "Você" : LADOS[x]);
+  switch (r.tipo) {
+    case "militar": return r.vencedor === h ? "O seu míssil atingiu o alvo e não houve retaliação a tempo." : `${LADOS[r.vencedor]} atingiu você e não houve retaliação a tempo.`;
+    case "diplomatica": return `${r.vencedor === h ? "O seu Tratado" : `O Tratado de ${LADOS[r.vencedor]}`} voltou ao topo sem nenhum míssil em voo.`;
+    case "tecnologica": return `${eu(r.vencedor)} completou Sputnik, Voo tripulado e Pouso na Lua.`;
+    case "paz": return "O relógio da Guerra Fria terminou sem vencedor. Os dois lados pontuam.";
+    default: return "Os dois mísseis chegaram. Ninguém ganha.";
+  }
+}
+
+async function mostrarResultado(r) {
+  const s = est.serie;
+  const h = s.humano;
+  const titulo = r.vencedor === null ? NOME_RESULTADO[r.tipo] : `${NOME_RESULTADO[r.tipo]}: ${r.vencedor === h ? "você vence" : LADOS[r.vencedor] + " vence"}`;
+  const lanc = r.lancamentos.length
+    ? r.lancamentos.map((l) => `${l.jogador === h ? "Você" : LADOS[l.jogador]} lançou no turno ${l.turno}`).join(" · ")
+    : "Nenhum ICBM foi lançado.";
+  const html = `
+    <p>${esc(textoResultado(r, h))}</p>
+    <p class="dica">Arquivo revelado: ${esc(lanc)}</p>
+    <p style="font-family:var(--f-dado)">Pontos desta partida: você <b>${r.pontos[h]}</b> × <b>${r.pontos[1 - h]}</b> ${LADOS[1 - h]}<br>
+    Placar da série: você <b>${s.placar[h]}</b> × <b>${s.placar[1 - h]}</b> ${LADOS[1 - h]}</p>`;
+  const ultima = s.n >= s.total;
+  await abrirModal({ titulo, carimbo: `Partida ${s.n}/${s.total}`, html, botoes: [{ rot: ultima ? "Ver resultado da série" : "Próxima partida", val: true, estilo: "primario" }] });
+}
+
+async function mostrarFimSerie() {
+  const s = est.serie;
+  const h = s.humano;
+  const meu = s.placar[h], dele = s.placar[1 - h];
+  const titulo = meu > dele ? "Você venceu a série" : meu < dele ? `${LADOS[1 - h]} venceu a série` : "Série empatada";
+  const linhas = s.resultados.map((r, i) =>
+    `<li>Partida ${i + 1}: ${esc(NOME_RESULTADO[r.tipo])}${r.vencedor === null ? "" : r.vencedor === h ? " (você)" : ` (${LADOS[r.vencedor]})`} · ${r.pontos[h]} × ${r.pontos[1 - h]}</li>`).join("");
+  const html = `<p style="font-family:var(--f-dado);font-size:18px">Você <b>${meu}</b> × <b>${dele}</b> ${LADOS[1 - h]}</p>
+    <p>O adversário jogava como <b>${esc(ESTRATEGIAS[s.botChave].nome)}</b>: ${esc(ESTRATEGIAS[s.botChave].desc)}</p>
+    <ul style="margin:0;padding-left:18px">${linhas}</ul>`;
+  await abrirModal({ titulo, carimbo: "Fim da série", html, botoes: [{ rot: "Nova série", val: true, estilo: "primario" }] });
+  est.tela = "inicio";
+  est.serie = null;
+  est.partida = null;
+  render();
+}
+
+// ------------------------------------------------------------------- ações
+
+function jogar(jogada) {
+  const ped = est.pedido;
+  if (!ped) return;
+  est.pedido = null;
+  est.selecionada = null;
+  ped.resolver(jogada);
+}
+
+async function acaoJogar(c, secreta) {
+  const v = est.pedido.v;
+  if (c.tipo === "ICBM") {
+    const ok = await perguntar("Lançar o ICBM?", "O míssil vai virado para o fundo do baralho e chega ao alvo quando alcançar o topo. Você só tem um. O adversário verá apenas que você pôs uma carta virada.", [
+      { rot: "Lançar", val: true, estilo: "perigo" }, { rot: "Cancelar", val: false },
+    ]);
+    if (ok) jogar({ carta: c, secreta: true });
+    return;
+  }
+  if (secreta) return jogar({ carta: c, secreta: true });
+  let alvo = null;
+  if (c.tipo === "SABOTAGEM") {
+    const techs = v.mesaOponente.filter((x) => G.TECNOLOGIAS.has(x.tipo));
+    if (techs.length > 1) {
+      const escolha = await escolherCartas(techs, 1, "Sabotagem", "Qual tecnologia do adversário mandar para o fundo do baralho?");
+      if (!escolha) return;
+      alvo = escolha[0];
+    } else alvo = techs[0];
+  } else if (c.tipo === "DESERTOR") {
+    const minhas = v.mao.filter((x) => x !== c && x.tipo !== "ICBM");
+    if (minhas.length) {
+      const escolha = await escolherCartas(minhas, 1, "Desertor", "Qual carta sua entregar em troca de uma carta aleatória do adversário?");
+      if (!escolha) return;
+      alvo = escolha[0];
+    }
+  }
+  jogar({ carta: c, secreta: false, alvo });
+}
+
+// ------------------------------------------------------------------- render
+
+function cartaHtml(c, { eu = null, selecionada = false, desabilitada = false, idx = null, extra = "" } = {}) {
+  const meta = CARTAS[c.tipo];
+  let nome = meta.nome, nota = meta.curta;
+  if (c.tipo === "ICBM" && eu !== null && c.dono !== null) {
+    const emVoo = !(est.partida && est.partida.maos.some((m) => m.includes(c)));
+    if (c.dono !== eu) { nome = `ICBM de ${LADOS[c.dono]}`; nota = emVoo ? "Em voo contra você!" : "Ainda na mão dele"; }
+    else if (emVoo) nota = "O seu míssil, em voo";
+  }
+  if (c.tipo === "TRATADO" && c.pendente) nota = `Tratado de ${LADOS[c.dono]} em curso`;
+  const reacao = ["VETO", "PONTE_AEREA", "DEFESA"].includes(c.tipo);
+  return `<button class="carta cat-${meta.cat}${c.tipo === "ICBM" ? " icbm" : ""}${selecionada ? " selecionada" : ""}" ${desabilitada ? "disabled" : ""} ${idx !== null ? `data-idx="${idx}"` : ""} ${extra}>
+    <span class="cat">${esc(ROTULO_CAT[meta.cat])}${reacao ? " · reação" : ""}</span>
+    <span class="nome">${esc(nome)}</span>
+    <span class="nota">${esc(nota)}</span>
+  </button>`;
+}
+
+function estadoIcbmInimigo(p, h) {
+  const i = p.intel[h];
+  if (i.estado === "voo") return `<span class="chip alerta"><span class="ponto"></span>ICBM inimigo EM VOO contra você</span>`;
+  if (i.estado === "interceptado") return `<span class="chip ok"><span class="ponto"></span>ICBM inimigo fora de jogo</span>`;
+  if (i.estado === "detonado") return `<span class="chip">ICBM inimigo detonado</span>`;
+  if (i.estado === "mao") return `<span class="chip"><span class="ponto"></span>ICBM inimigo na mão dele</span>`;
+  return `<span class="chip alerta" style="border-style:dashed"><span class="ponto"></span>ICBM inimigo: desconhecido · ${i.secretas} jogada${i.secretas === 1 ? "" : "s"} secreta${i.secretas === 1 ? "" : "s"}</span>`;
+}
+
+function meuIcbm(p, h) {
+  const e = p.icbm[h];
+  const txt = { mao: "Seu ICBM: na mão", voo: "Seu ICBM: em voo", interceptado: "Seu ICBM: interceptado", detonado: "Seu ICBM: detonado" }[e];
+  return `<span class="chip ${e === "voo" ? "alerta" : ""}"><span class="ponto"></span>${txt}</span>`;
+}
+
+function tecsHtml(mesa) {
+  return `<div class="tecs">${G.ORDEM_TEC.map((t) => `<span class="tec ${mesa.some((c) => c.tipo === t) ? "tem" : ""}">${esc(CARTAS[t].nome)}</span>`).join("")}${
+    mesa.some((c) => c.tipo === "SUBMARINO") ? `<span class="tec tem" style="--tecnologia:var(--militar)">Submarino nuclear</span>` : ""}</div>`;
+}
+
+function renderInicio() {
+  const opc = (campo, valor, rot) => `<button class="opcao" aria-pressed="${ajustes[campo] === valor}" data-ajuste="${campo}" data-valor="${esc(JSON.stringify(valor))}">${esc(rot)}</button>`;
+  return `
+  <header class="topo"><h1 class="marca">GUERRA FRIA<small>Jogo de cartas · protótipo de teste</small></h1></header>
+  <section class="inicio">
+    <p class="intro">O baralho é o tempo. Cada carta usada vai para o fundo e volta no futuro. O seu ICBM, lançado em segredo, leva o baralho inteiro para chegar. Até lá, o adversário pode perceber e retaliar, e se os dois mísseis chegarem, ninguém ganha.</p>
+    <div class="campos">
+      <div class="campo"><span>Seu lado</span><div class="opcoes">${opc("lado", 0, "EUA")}${opc("lado", 1, "URSS")}</div></div>
+      <div class="campo"><span>Partidas na série</span><div class="opcoes">${opc("partidas", 3, "3")}${opc("partidas", 5, "5")}${opc("partidas", 7, "7")}</div></div>
+      <div class="campo"><span>Adversário</span><div class="opcoes">${opc("oponente", "surpresa", "Surpresa")}${Object.entries(ESTRATEGIAS).map(([k, e]) => opc("oponente", k, e.nome)).join("")}</div>
+        <p class="dica">${esc(ajustes.oponente === "surpresa" ? "A postura do adversário só é revelada no fim da série." : ESTRATEGIAS[ajustes.oponente].desc)}</p></div>
+      <div class="campo"><span>Defesas antimíssil no baralho</span><div class="opcoes">${opc("defesas", 0, "0")}${opc("defesas", 1, "1")}${opc("defesas", 2, "2")}${opc("defesas", 3, "3")}</div></div>
+    </div>
+    <div class="campo"><span>Variantes de regra em teste</span>
+      <label class="check"><input type="checkbox" id="v-tratado" data-check="tratadoNoMeio" ${ajustes.tratadoNoMeio ? "checked" : ""}><span><b>Tratado no meio do baralho.</b> Volta mais rápido; nas simulações, fez a vitória diplomática passar de 0% para 37%.</span></label>
+      <label class="check"><input type="checkbox" id="v-ordem" data-check="tecnologiaEmOrdem" ${ajustes.tecnologiaEmOrdem ? "checked" : ""}><span><b>Tecnologias em ordem.</b> Sputnik, depois Voo tripulado, depois Pouso na Lua.</span></label>
+      <label class="check"><input type="checkbox" id="v-segundo" data-check="segundoAtaque" ${ajustes.segundoAtaque ? "checked" : ""}><span><b>Segundo ataque.</b> Quem é atingido com o ICBM ainda na mão retalia automaticamente. Com 0 ou 1 Defesa, foi a única regra em que atacar primeiro deixou de compensar.</span></label>
+      <label class="check"><input type="checkbox" id="v-radar" data-check="radar" ${ajustes.radar ? "checked" : ""}><span><b>Radar.</b> Um ICBM entre as 2 cartas do topo é detectado pelo alvo.</span></label>
+    </div>
+    <div class="botoes"><button class="botao primario" id="comecar">Começar série</button></div>
+    <details class="regras"><summary>Como jogar</summary><ul>
+      <li>No seu turno, jogue até 1 carta e depois compre 1 do topo. Cartas usadas vão para o fundo.</li>
+      <li>Você pode jogar uma carta <b>aberta</b> (com efeito) ou <b>virada no fundo</b>. Virada é o único jeito de lançar o ICBM, e serve de blefe com qualquer outra carta.</li>
+      <li>O ICBM atinge o adversário quando chegar ao topo. Se ele já tiver lançado o dele, ninguém ganha.</li>
+      <li>Defesa antimíssil, Veto na ONU e Ponte aérea são reações: o jogo pergunta na hora certa.</li>
+      <li>Vitórias: militar (5 pontos), diplomática ou tecnológica (4 × 1), paz (3 × 3), destruição mútua (0 × 0).</li>
+      <li>Crises acontecem ao serem compradas. Na 2ª vez que alguém comprar o Fim da Guerra Fria, a partida termina em paz.</li>
+    </ul></details>
+  </section>`;
+}
+
+function renderJogo() {
+  const s = est.serie, p = est.partida, h = s.humano, o = 1 - h;
+  const nomeBot = s.oculto ? "postura desconhecida" : ESTRATEGIAS[s.botChave].nome;
+  const minhaVez = est.pedido && est.pedido.tipo === "jogada";
+
+  const topo = `<header class="topo">
+    <h1 class="marca">GUERRA FRIA<small>Partida ${s.n}/${s.total} · turno ${p.turno}</small></h1>
+    <div class="placar">
+      <span class="lado-${h === 0 ? "eua" : "urss"}">Você (${LADOS[h]}) <b>${s.placar[h]}</b></span>
+      <span>×</span>
+      <span class="lado-${o === 0 ? "eua" : "urss"}"><b>${s.placar[o]}</b> ${LADOS[o]}</span>
+      <button class="botao leve" id="abandonar">Nova série</button>
+    </div></header>`;
+
+  const oponente = `<section class="painel">
+    <h2 class="lado-${o === 0 ? "eua" : "urss"}">${LADOS[o]} <span class="sub">${esc(nomeBot)} · ${p.maos[o].length} cartas na mão</span></h2>
+    <div class="versos">${p.maos[o].map(() => `<span class="verso-mini"></span>`).join("")}</div>
+    <div class="linha-info">${estadoIcbmInimigo(p, h)}${p._tratadoPendente(o) ? `<span class="chip" style="color:var(--diplomacia);border-color:var(--diplomacia)">Tratado em curso</span>` : ""}</div>
+    ${tecsHtml(p.mesas[o])}
+  </section>`;
+
+  const fatias = p.baralho.map((c, i) => {
+    let cls = "fatia", rot = "";
+    if (c.tipo === "TRATADO" && c.pendente) { cls += " tratado"; rot = `Tratado ${LADOS[c.dono]}`; }
+    else if (c.tipo === "ICBM" && c.dono === h) { cls += " meu-missil"; rot = "seu ICBM"; }
+    if (i === 0 && !rot) rot = "topo";
+    return `<span class="${cls}" title="posição ${i + 1}">${rot ? `<span class="rotulo">${esc(rot)}</span>` : ""}</span>`;
+  }).join("");
+  const tempo = `<section class="painel tempo">
+    <h2>Linha do tempo <span class="sub">${p.baralho.length} cartas no baralho · Fim da Guerra Fria ${p.fimContagem}/${s.cfg.fimLimite}</span></h2>
+    <div class="trilha-rolagem"><div class="trilha">${fatias}</div></div>
+    <div class="legenda"><span>← topo (próxima compra)</span><span><i style="background:var(--diplomacia)"></i>Tratado em curso</span><span><i style="background:var(--carimbo)"></i>seu ICBM em voo</span><span>fundo →</span></div>
+  </section>`;
+
+  let acao;
+  if (minhaVez) {
+    const c = est.selecionada;
+    const jogavel = c && est.pedido.v.jogaveis.includes(c);
+    let corpo;
+    if (!c) {
+      corpo = `<div class="status">Sua vez</div><div class="desc">Escolha uma carta da sua mão, ou passe e só compre.</div>`;
+    } else {
+      const meta = CARTAS[c.tipo];
+      const reacao = ["VETO", "PONTE_AEREA", "DEFESA"].includes(c.tipo);
+      corpo = `<div class="status">${esc(meta.nome)}</div><div class="desc">${esc(meta.desc)}${reacao ? " O jogo vai oferecer esta carta na hora certa." : ""}${!jogavel && !reacao && c.tipo !== "ICBM" ? " Não pode ser jogada aberta agora." : ""}</div>`;
+    }
+    const botoes = [];
+    if (c && c.tipo === "ICBM") botoes.push(`<button class="botao perigo" id="b-lancar">Lançar em segredo</button>`);
+    if (c && jogavel) botoes.push(`<button class="botao primario" id="b-jogar">Jogar aberta</button>`);
+    if (c && c.tipo !== "ICBM") botoes.push(`<button class="botao" id="b-virada">Pôr virada no fundo (blefe)</button>`);
+    botoes.push(`<button class="botao ${c ? "leve" : "primario"}" id="b-passar">Passar e comprar</button>`);
+    acao = `<section class="acao">${corpo}<div class="botoes">${botoes.join("")}</div></section>`;
+  } else {
+    acao = `<section class="acao"><div class="status pensando">${p.vez === o ? `${LADOS[o]} está jogando` : "Resolvendo"}</div></section>`;
+  }
+
+  const eu = `<section class="painel">
+    <h2 class="lado-${h === 0 ? "eua" : "urss"}">Você · ${LADOS[h]} <span class="sub">${p.maos[h].length}/${s.cfg.limiteMao} cartas</span></h2>
+    <div class="linha-info">${meuIcbm(p, h)}${p._tratadoPendente(h) ? `<span class="chip" style="color:var(--diplomacia);border-color:var(--diplomacia)">Seu Tratado em curso</span>` : ""}</div>
+    ${tecsHtml(p.mesas[h])}
+    <div class="mao">${p.maos[h].map((c, i) => cartaHtml(c, { eu: h, selecionada: est.selecionada === c, desabilitada: !minhaVez, idx: i, extra: 'data-mao="1"' })).join("")}</div>
+  </section>`;
+
+  const diario = `<aside class="diario"><h2>Diário de crise</h2><div class="registro" id="registro">${
+    est.registro.map((r) => `<div class="${r.classe}">${esc(r.texto)}</div>`).join("")}</div></aside>`;
+
+  return `${topo}<div class="mesa">${oponente}${tempo}${acao}${eu}</div>${diario}`;
+}
+
+function renderModal() {
+  const m = est.modal;
+  if (!m) return "";
+  let corpo = m.html || "";
+  let botoes = m.botoes || [];
+  if (m.tipo === "escolher") {
+    corpo = `<p>${esc(m.texto)}</p><div class="mao">${m.cartas.map((c, i) => cartaHtml(c, { eu: est.serie && est.serie.humano, selecionada: m.marcadas.includes(c), idx: i, extra: 'data-escolha="1"' })).join("")}</div>
+      <p class="dica">${m.marcadas.length} de ${m.n} escolhida(s)</p>`;
+    botoes = [{ rot: "Confirmar", val: "__ok", estilo: "primario", desab: m.marcadas.length !== m.n }];
+    if (m.titulo !== "Limite de mão") botoes.push({ rot: "Cancelar", val: null });
+  } else if (m.tipo === "ordenar") {
+    corpo = `<p>${esc(m.texto)}</p><div class="mao">${m.cartas.map((c, i) => {
+      const pos = m.ordem.indexOf(c);
+      return cartaHtml(c, { eu: est.serie.humano, selecionada: pos >= 0, idx: i, extra: 'data-ordem="1"' }).replace('<span class="cat">', `<span class="cat">${pos >= 0 ? `${pos + 1}º · ` : ""}`);
+    }).join("")}</div>`;
+    botoes = [{ rot: "Confirmar ordem", val: "__ok", estilo: "primario", desab: m.ordem.length !== m.cartas.length }, { rot: "Recomeçar", val: "__limpar" }];
+  }
+  if (m.html && !m.tipo) corpo = `<div style="display:grid;gap:10px">${corpo}</div>`;
+  return `<div class="veu"><div class="modal" role="dialog" aria-modal="true" aria-label="${esc(m.titulo)}">
+    ${m.carimbo ? `<span class="carimbo">${esc(m.carimbo)}</span>` : ""}
+    <h3>${esc(m.titulo)}</h3>${corpo}
+    <div class="botoes">${botoes.map((b, i) => `<button class="botao ${b.estilo || ""}" data-modal="${i}" ${b.desab ? "disabled" : ""}>${esc(b.rot)}</button>`).join("")}</div>
+  </div></div>`;
+}
+
+function render() {
+  const reg = document.getElementById("registro");
+  const noFim = !reg || reg.scrollHeight - reg.scrollTop - reg.clientHeight < 40;
+  $app.className = "app" + (est.tela === "jogo" ? " jogando" : "");
+  $app.innerHTML = (est.tela === "inicio" ? renderInicio() : renderJogo()) + renderModal();
+  const novo = document.getElementById("registro");
+  if (novo && noFim) novo.scrollTop = novo.scrollHeight;
+  const foco = $app.querySelector(".modal .botao.primario:not(:disabled), .modal .botao:not(:disabled)");
+  if (foco) foco.focus({ preventScroll: true });
+}
+
+// ------------------------------------------------------------------- eventos
+
+$app.addEventListener("click", (e) => {
+  const alvo = e.target.closest("button, input");
+  if (!alvo) return;
+
+  if (alvo.dataset.ajuste) {
+    ajustes[alvo.dataset.ajuste] = JSON.parse(alvo.dataset.valor);
+    return render();
+  }
+  if (alvo.dataset.check) {
+    ajustes[alvo.dataset.check] = alvo.checked;
+    return;
+  }
+  if (alvo.id === "comecar") return void novaSerie();
+  if (alvo.id === "abandonar") {
+    perguntar("Abandonar a série?", "A série atual será descartada.", [
+      { rot: "Abandonar", val: true, estilo: "perigo" }, { rot: "Continuar jogando", val: false },
+    ]).then((ok) => {
+      if (!ok) return;
+      est.serie = null; est.partida = null; est.pedido = null; est.tela = "inicio"; render();
+    });
+    return;
+  }
+
+  const m = est.modal;
+  if (m && alvo.dataset.modal !== undefined) {
+    const b = (m.tipo === "escolher" || m.tipo === "ordenar") ? null : m.botoes[+alvo.dataset.modal];
+    if (b) return fecharModal(b.val);
+    const rot = alvo.textContent;
+    if (m.tipo === "escolher") return fecharModal(rot === "Confirmar" ? m.marcadas.slice() : null);
+    if (rot === "Recomeçar") { m.ordem = []; return render(); }
+    return fecharModal(m.ordem.slice());
+  }
+  if (m && alvo.dataset.escolha) {
+    const c = m.cartas[+alvo.dataset.idx];
+    const i = m.marcadas.indexOf(c);
+    if (i >= 0) m.marcadas.splice(i, 1);
+    else { if (m.marcadas.length >= m.n) m.marcadas.shift(); m.marcadas.push(c); }
+    return render();
+  }
+  if (m && alvo.dataset.ordem) {
+    const c = m.cartas[+alvo.dataset.idx];
+    if (!m.ordem.includes(c)) m.ordem.push(c);
+    return render();
+  }
+  if (m) return;
+
+  if (alvo.dataset.mao && est.pedido) {
+    const c = est.partida.maos[est.serie.humano][+alvo.dataset.idx];
+    est.selecionada = est.selecionada === c ? null : c;
+    return render();
+  }
+  if (!est.pedido) return;
+  const c = est.selecionada;
+  if (alvo.id === "b-passar") return jogar(null);
+  if (alvo.id === "b-lancar" && c) return void acaoJogar(c, true);
+  if (alvo.id === "b-jogar" && c) return void acaoJogar(c, false);
+  if (alvo.id === "b-virada" && c) return void acaoJogar(c, true);
+});
+
+$app.addEventListener("change", (e) => {
+  if (e.target.dataset.check) ajustes[e.target.dataset.check] = e.target.checked;
+});
+
+render();
+</script>

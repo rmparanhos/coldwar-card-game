@@ -194,6 +194,19 @@ Com **T** = atacar sem resposta (5), **R** = paz (3), **S** = ser atingido (0) e
 Jogar em **séries** transforma o jogo num **dilema repetido**: entram reputação,
 retaliação e estratégias como *olho por olho* (tit-for-tat).
 
+## Variantes em teste 🧪
+
+Resultados completos em [`ANALISE.md`](ANALISE.md).
+
+| Variante | O que muda | Efeito nas simulações |
+|---|---|---|
+| **Tratado no meio** | O Tratado entra no meio do baralho, não no fundo | Vitória diplomática passa de 0% para 37–50% |
+| **1 cópia de cada tecnologia** | 1 Sputnik, 1 Voo tripulado, 1 Pouso na Lua | Tecnológica cai de 48% para 8% |
+| **Tecnologias em ordem** | Sputnik → Voo tripulado → Pouso na Lua | Quase nenhum |
+| **Radar** | ICBM entre as 2 cartas do topo é revelado ao alvo | Nenhum enquanto houver 3 Defesas |
+| **Segundo ataque** | Quem é atingido com o ICBM na mão sempre retalia | Com 0 Defesas, a dissuasão funciona: ataque nunca compensa |
+| **Menos Defesas** | 0, 1 ou 2 Defesas no baralho | Mais destruição mútua; a Defesa é o que quebra a dissuasão |
+
 ## Dúvidas em aberto ❓
 
 1. O que fazia a **proxy war**?
