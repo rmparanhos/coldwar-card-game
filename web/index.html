@@ -111,6 +111,7 @@ button:focus-visible, .carta:focus-visible { outline: 2px solid var(--tecnologia
 .trilha { display: flex; gap: 3px; align-items: flex-end; min-width: min-content; padding-top: 18px; position: relative; }
 .fatia { width: 12px; height: 34px; flex: none; border-radius: 1px; background: var(--verso); opacity: .85; position: relative; }
 .fatia:first-child { outline: 2px solid var(--tinta); outline-offset: 1px; }
+.fatia:first-child .rotulo { left: 0; transform: none; }
 .fatia.tratado { background: var(--diplomacia); opacity: 1; height: 40px; }
 .fatia.meu-missil { background: var(--carimbo); opacity: 1; height: 40px; }
 .fatia .rotulo { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); font-family: var(--f-dado); font-size: 10px; white-space: nowrap; margin-bottom: 2px; }
@@ -348,7 +349,11 @@ const ouvinte = {
       registrar(`TURNO ${p.turno} · ${p.vez === est.serie.humano ? "você" : LADOS[p.vez]}`, "turno");
     }
     if (privado && privado.jogador === est.serie.humano) registrar(privado.texto, "privado");
-    else if (texto) registrar(texto, /ATINGIDO|INTERCEPTADO|☢|CRISE|completa|Tratado .* volta/.test(texto) ? "forte" : "");
+    else if (texto) {
+      const eu = LADOS[est.serie.humano] + " ";
+      if (texto.startsWith(eu)) texto = "Você " + texto.slice(eu.length);
+      registrar(texto, /ATINGIDO|INTERCEPTADO|☢|CRISE|completa|Tratado .* volta/.test(texto) ? "forte" : "");
+    }
     render();
   },
   async pausa() { await dormir(150); },
